@@ -4,11 +4,11 @@ from evdev import InputDevice, list_devices
 import os
 import subprocess
 
-#devices = [InputDevice(fn) for fn in list_devices()]
-#for dev in devices:
-	#print(dev.fn, dev.name, dev.phys)
+devices = [InputDevice(fn) for fn in list_devices()]
+for dev in devices:
+	print(dev.fn, dev.name, dev.phys)
 
-dev = InputDevice('/dev/input/event2')
+dev = InputDevice('/dev/input/event0')
 
 scancodes = {
     # Scancode: ASCIICode
@@ -28,37 +28,40 @@ capscodes = {
     40: u'\'', 41: u'~', 42: u'LSHFT', 43: u'|', 44: u'Z', 45: u'X', 46: u'C', 47: u'V', 48: u'B', 49: u'N',
     50: u'M', 51: u'<', 52: u'>', 53: u'?', 54: u'RSHFT', 56: u'LALT', 100: u'RALT'
 }
+
 #setup vars
 x = ''
 caps = False
 store = False
 
-def write_file():
-	pass
+def write_file(message):
+	fichier = open("data.txt", "w")
+	fichier.write(message)
+	fichier.close()
 
 def upload_file():
 	pass
 
+def get_key(code):
+	code = data.scancode 
+	return u'{}'.format(scancodes.get(data.scancode)) or u'UNKNOWN:[{}]'.format(data.scancode)
+
 def audio(k):
 	subprocess.call(["mpg321", "http://translate.google.com/translate_tts?tl=fr&client=tw-ob&q=%s" % k])
-	#os.popen('mpg321 "http://translate.google.com/translate_tts?tl=fr&client=tw-ob&q=%s" % k')
 
 for event in dev.read_loop():
 	if event.type == ecodes.EV_KEY:
 		data = categorize(event)
-		if data.keystate == 1:
-			print data.scancode
-			key_lookup = u'{}'.format(scancodes.get(data.scancode)) or u'UNKNOWN:[{}]'.format(data.scancode)
-			print key_lookup
-			#audio(key_lookup)
-			if (data.scancode == 21):
+		if data.keystate == 1:#key down
+			key_lookup = get_key(data.scancode)
+			print data.scancode,key_lookup
+			audio(key_lookup)
+			if (data.scancode == 21):#KEY Y
 				store = True 
 			if store:
 				x = x + key_lookup  # Print it all out!
-			if(data.scancode == 28):
-                		print "x => " + x
-				fichier = open("data.txt", "w")
-				fichier.write(x)
-				fichier.close()
+			if(data.scancode == 28):#KEY entree
+                		print "message => " + x
+				write_file(x)
 				x = ''
 				store = False
